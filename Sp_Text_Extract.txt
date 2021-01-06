@@ -1,0 +1,114 @@
+Drop table #A
+Select Name,definition as [Text] into #A from sys.sql_modules sc join sys.procedures sp on sp.object_id = sc.object_id
+where name in ()
+
+Select * from #A --where name = 'web_proc_leave_record_isb'
+
+Declare  @Text varchar(max)
+Declare Test_Cursor Cursor For
+Select TEXT from #A 
+
+Open Test_Cursor
+
+Fetch next from test_cursor
+into @Text
+
+While @@FETCH_STATUS = 0
+Begin 
+	Print @Text  + CHAR(13) + 'GO'
+	Fetch next from test_cursor
+	into @Text
+
+	End
+	Close Test_Cursor
+	Deallocate Test_Cursor
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+Set Nocount on
+Declare  @Text nvarchar(max)
+Declare  @Text1 nvarchar(max)
+--Declare @tbl table (vtext varchar(max))
+Declare Test_Cursor Cursor For
+With Defination
+As
+(
+Select Name,definition as [Text]  from sys.sql_modules sc join sys.procedures sp on sp.object_id = sc.object_id
+where name in ('WEB_PROC_GP_EMP_VIEWLEAVESDASBOARD_NEW','GP_WEB_PROC_GetUserRole','GP_GET_ACTING_SUPERVISOR_NEW_V1')
+)
+
+--Declare  @Text nvarchar(max)
+--Declare Test_Cursor Cursor For
+Select TEXT+ CHAR(13)+ 'GO' from Defination 
+Open Test_Cursor
+Fetch next from test_cursor
+into @Text
+While @@FETCH_STATUS = 0
+Begin 
+--select len(@Text)
+Declare @tbl table (vtext varchar(max))
+	Insert into @tbl (vtext)
+	exec [Print_Unlimited] @Text
+	Select @Text1=vtext from  @tbl
+	
+	print  Substring(@Text1+'GO',1,8000)--+ CHAR(13)+ 'GO'
+
+	Fetch next from test_cursor
+	into @Text
+	End
+	Close Test_Cursor
+	Deallocate Test_Cursor
+		Set Nocount Off
+
+------------------------------------------------------------------------------------------------------------------------
+
+ /*  
+---------------------------------------------------------------------------------  
+PURPOSE   : Print a string without the limitation of 4000 or 8000 characters.  
+https://stackoverflow.com/questions/7850477/how-to-print-varcharmax-using-print-statement  
+USAGE     :   
+DECLARE @Result NVARCHAR(MAX)  
+SET @Result = 'TEST'  
+EXEC [dbo].[Print_Unlimited] @Result  
+---------------------------------------------------------------------------------  
+*/  
+Create PROCEDURE [dbo].[Print_Unlimited]  
+    @String NVARCHAR(MAX)  
+AS  
+  
+BEGIN  
+  
+    BEGIN TRY  
+    ---------------------------------------------------------------------------------  
+  
+    DECLARE @CurrentEnd BIGINT; /* track the length of the next substring */  
+    DECLARE @Offset TINYINT; /* tracks the amount of offset needed */  
+    SET @String = replace(replace(@String, CHAR(13) + CHAR(10), CHAR(10)), CHAR(13), CHAR(10))  
+  
+    WHILE LEN(@String) > 1  
+    BEGIN  
+        IF CHARINDEX(CHAR(10), @String) BETWEEN 1 AND 4000  
+        BEGIN  
+            SET @CurrentEnd =  CHARINDEX(CHAR(10), @String) -1  
+            SET @Offset = 2  
+        END  
+        ELSE  
+        BEGIN  
+            SET @CurrentEnd = 4000  
+            SET @Offset = 1  
+        END     
+        PRINT SUBSTRING(@String, 1, @CurrentEnd)   
+        SET @String = SUBSTRING(@String, @CurrentEnd + @Offset, LEN(@String))     
+    END /*End While loop*/  
+  
+    ---------------------------------------------------------------------------------  
+    END TRY  
+    BEGIN CATCH  
+        DECLARE @ErrorMessage VARCHAR(4000)  
+        SELECT @ErrorMessage = ERROR_MESSAGE()      
+        RAISERROR(@ErrorMessage,16,1)  
+    END CATCH  
+END
