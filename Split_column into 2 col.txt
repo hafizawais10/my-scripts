@@ -1,0 +1,18 @@
+select LEFT([REFERRING DOCTOR NAME], CHARINDEX(',', [REFERRING DOCTOR NAME] + '') - 1) as Last_Name,RIGHT([REFERRING DOCTOR NAME],CHARINDEX(',', reverse([REFERRING DOCTOR NAME]))-2) as First_Name from OAP_MFM_MTBC_REF_Physician_Providers
+
+select Substring([REFERRING DOCTOR NAME],PATINDEX('%,%',[REFERRING DOCTOR NAME])+1,len([REFERRING DOCTOR NAME])) from Physician_Providers
+
+
+
+--------------------while loop SQL
+DECLARE @cnt INT = 0;
+
+WHILE @cnt < 10
+BEGIN
+   PRINT 'Inside simulated FOR LOOP on TechOnTheNet.com';
+   SET @cnt = @cnt + 1;
+END;
+
+PRINT 'Done simulated FOR LOOP on TechOnTheNet.com';
+GO													
+

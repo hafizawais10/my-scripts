@@ -1,0 +1,8 @@
+ SELECT A.CL,  
+     Replace(Replace(Replace(Split.a.value('.', 'VARCHAR(100)'),'[',''),'"',''),']','') AS Data  
+ FROM  
+ (
+     SELECT CL,  
+         CAST ('<M>' + REPLACE(CL, ',', '</M><M>') + '</M>' AS XML) AS Data  
+     FROM  awais
+ ) AS A CROSS APPLY Data.nodes ('/M') AS Split(a); 

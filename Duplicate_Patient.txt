@@ -1,0 +1,20 @@
+
+
+----------------------------First Query--------------------------------------
+
+WITH DUPLICATE
+AS
+(
+select rank() over(partition by first_name,last_name,date_of_birth ORDER BY PATIENT_ACCOUNT) S_No,* from patient 
+where practice_code = 1013287  and isnull(deleted,0)=0 
+)
+SELECT S_NO,FIRST_NAME,LAST_NAME,Date_Of_Birth,* FROM DUPLICATE WHERE S_NO <>1 
+
+-----------------------------Second Query--------------------------------------
+
+ Select * from Patient a
+            where EXISTS (Select * from Patient b 
+                where practice_code = 1013287 and isnull(deleted,0)=0 and a.First_Name = b.First_Name 
+                        and  a.Last_Name = b.Last_Name
+                     and a.Patient_Account != b.Patient_Account and a.Date_Of_Birth = b.Date_Of_Birth) 
+and practice_code = 1013287 and isnull(deleted,0)=0 order by First_Name,Last_Name
